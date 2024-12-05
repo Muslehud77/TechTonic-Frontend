@@ -3,17 +3,19 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { loginUser } from "../service/auth";
+import { envConfig } from "../config/envConfig";
+
 
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   providers: [
     GithubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
+      clientId: envConfig.GITHUB_ID!,
+      clientSecret: envConfig.GITHUB_SECRET!,
     }),
     Google({
-      clientId: process.env.GOOGLE_ID as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
+      clientId: envConfig.GOOGLE_ID!,
+      clientSecret: envConfig.GOOGLE_SECRET!,
     }),
 
     CredentialsProvider({
@@ -35,7 +37,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks : {
-    async signIn ({ user, account, profile }: { user: User; account: any; profile: any }) {
+    async signIn ({ user, account, profile }: { user: User; account: any; profile?: any }) {
 
       if(!profile || !account){
         return false;

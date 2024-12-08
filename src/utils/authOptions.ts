@@ -41,11 +41,16 @@ export const authOptions: NextAuthOptions = {
 
       if(!profile || !account){
         return false;
+      }else{
+
+        const { name, email, image } = user;
+        const { provider } = account;
+       
+        const res = await loginUser({name,email,profilePhoto:image,provider});
+        console.log(res)
       }
 
-      const { name, email, image } = user;
-      const { provider } = account;
-      console.log({ name, email, image, provider });
+
       return true;
     }
   },

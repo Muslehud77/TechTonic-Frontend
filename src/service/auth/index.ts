@@ -1,8 +1,6 @@
 "use server";
 
-
-
-import axiosInstance from "@/src/config/nexios/nexios.config";
+import axiosInstance from "@/src/config/AxiosInstance/axios.config";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { FieldValues } from "react-hook-form";
@@ -17,7 +15,7 @@ export const registerUser = async (user: FieldValues) => {
     }
     return data;
   } catch (e: any) {
-    throw new Error(e);
+    throw new Error(e.response.data.message);
   }
 };
 
@@ -25,13 +23,14 @@ export const loginUser = async (user: FieldValues) => {
   const cookieStore = await cookies();
   try {
     const { data } = await axiosInstance.post("/auth/login", user);
+
     if (data.success) {
       cookieStore.set("accessToken", data?.data?.accessToken);
       cookieStore.set("refreshToken", data?.data?.refreshToken);
     }
     return data;
   } catch (e: any) {
-    throw new Error(e);
+    throw new Error(e.response.data.message);
   }
 };
 
@@ -59,6 +58,8 @@ export const getCurrentUser = async () => {
       role: decodedToken.role,
       status: decodedToken.status,
       profilePhoto: decodedToken.profilePhoto,
+      isPremium: decodedToken.isPremium,
+      expireAt: decodedToken.expireAt,
     };
   }
 
@@ -80,7 +81,35 @@ export const getNewAccessToken = async () => {
     });
 
     return data;
-  } catch (error) {
-    throw new Error("Failed to get new access token");
+  } catch (error: any) {
+    throw new Error(error.response.data.message);
+  }
+};
+
+export const forgotPassword = async (email: string) => {
+  try {
+    const { data } = await axiosInstance.post("/auth/forgot-password", {
+      email,
+    });
+    return data;
+  } catch (e: any) {
+    throw new Error(e.response.data.message);
+  }
+};
+
+export const resetPassword = async (password: string, token: string) => {
+  const cookieStore = await cookies();
+  try {
+    cookieStore.set("accessToken", token);
+
+    const { data } = await axiosInstance.post("/auth/reset-password", {
+      newPassword: password,
+    });
+
+    await logoutUser();
+
+    return data;
+  } catch (e: any) {
+    throw new Error(e.response.data.message);
   }
 };

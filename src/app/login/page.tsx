@@ -3,13 +3,18 @@ import { IoLogoGoogle } from "react-icons/io";
 import { useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
-import Image from "next/image";
 import { EyeClosed, EyeIcon } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { useForm, Controller } from "react-hook-form";
-import {signIn, signOut} from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
+import { Logo } from "@/src/Assets/logo";
+import { useUserLogin, useUserRegistration } from "@/src/hooks/auth.hook";
 
 const SignInSignUp = () => {
+
+  const {mutate} = useUserLogin()
+  const {} = useUserRegistration()
+
   const [isSignIn, setIsSignIn] = useState(true);
   const [isVisible, setIsVisible] = useState({
     password: false,
@@ -35,6 +40,7 @@ const SignInSignUp = () => {
   // Sign-in and sign-up form submit handlers
   const onSubmitSignIn = (data: any) => {
     console.log("Sign-In Data:", data);
+    mutate(data)
   };
 
   const onSubmitSignUp = (data: any) => {
@@ -47,13 +53,7 @@ const SignInSignUp = () => {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center">
-            <Image
-              className="w-auto h-7 sm:h-8"
-              src="https://merakiui.com/images/logo.svg"
-              alt="Logo"
-              width={40}
-              height={40}
-            />
+            <Logo />
           </div>
 
           {/* Tabs */}
@@ -94,6 +94,7 @@ const SignInSignUp = () => {
           <form
             onSubmit={handleSubmit(isSignIn ? onSubmitSignIn : onSubmitSignUp)}
           >
+            {/* Full Name Input (For Sign Up) */}
             {!isSignIn && (
               <Input
                 {...register("name", { required: "Full name is required" })}
@@ -137,7 +138,7 @@ const SignInSignUp = () => {
               className="mt-4"
             />
 
-            {/* Confirm Password (for Sign Up) */}
+            {/* Confirm Password (For Sign Up) */}
             {!isSignIn && (
               <div className="mt-4">
                 <Input
@@ -169,6 +170,20 @@ const SignInSignUp = () => {
               {isSignIn ? "Sign In" : "Sign Up"}
             </Button>
           </form>
+
+          {/* Forgot Password Link (For Sign In Only) */}
+          {isSignIn && (
+            <div className="mt-4 text-center">
+              <a
+                href="/forgot-password" // Link to the Forgot Password page
+                className="text-sm text-blue-500 hover:text-blue-600"
+              >
+                Forgot your password?
+              </a>
+            </div>
+          )}
+
+          {/* Social Media Login Options (For Sign In Only) */}
           {isSignIn && (
             <div className="mt-6 flex flex-col items-center">
               <span className="text-sm text-gray-500 uppercase dark:text-gray-400">
@@ -180,16 +195,16 @@ const SignInSignUp = () => {
                   className="w-full"
                   variant="ghost"
                   startContent={<IoLogoGoogle size={20} />}
-                  onClick={() => signIn("google",{callbackUrl:"/"})}
+                  onClick={() => signIn("google", { callbackUrl: "/" })}
                 >
                   Sign in with Google
                 </Button>
 
-                {/* Twitter Login */}
+                {/* Github Login */}
                 <Button
                   isIconOnly={true}
                   color="default"
-                  onClick={() => signIn("github",{callbackUrl:"/"})}
+                  onClick={() => signIn("github", { callbackUrl: "/" })}
                 >
                   <FaGithub size={20} />
                 </Button>

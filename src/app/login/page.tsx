@@ -9,11 +9,32 @@ import { useForm, Controller } from "react-hook-form";
 import { signIn, signOut } from "next-auth/react";
 import { Logo } from "@/src/Assets/logo";
 import { useUserLogin, useUserRegistration } from "@/src/hooks/auth.hook";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const SignInSignUp = () => {
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
-  const {mutate} = useUserLogin()
-  const {} = useUserRegistration()
+  const router = useRouter();
+
+  const {
+    mutate: loginMutation,
+    isPending: pendingLogin,
+    isSuccess: isLoginSuccess,
+    error: loginError, // Error from login mutation
+  } = useUserLogin();
+
+
+
+  const {
+    mutate: registerMutation,
+    isPending: pendingRegister,
+    isSuccess: isRegisterSuccess,
+    error: registerError, // Error from registration mutation
+  } = useUserRegistration();
+
+
+ 
 
   const [isSignIn, setIsSignIn] = useState(true);
   const [isVisible, setIsVisible] = useState({
@@ -34,18 +55,29 @@ const SignInSignUp = () => {
     control,
     register,
     reset,
+    getValues,
     formState: { errors },
   } = useForm();
 
   // Sign-in and sign-up form submit handlers
   const onSubmitSignIn = (data: any) => {
-    console.log("Sign-In Data:", data);
-    mutate(data)
+   
+    loginMutation(data);
   };
 
   const onSubmitSignUp = (data: any) => {
-    console.log("Sign-Up Data:", data);
+   
+    registerMutation(data);
   };
+
+  // Handle redirection after successful login or registration
+  if (isLoginSuccess || isRegisterSuccess) {
+    if (redirect) {
+      router.push(redirect);
+    } else {
+      router.push("/");
+    }
+  }
 
   return (
     <section className="">
@@ -104,11 +136,20 @@ const SignInSignUp = () => {
                 errorMessage={errors?.name?.message as string}
               />
             )}
+
             {/* Email Input */}
             <Input
-              {...register("email", { required: "Email is required" })}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value:
+                    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                  message: "Please enter a valid email",
+                },
+              })}
               fullWidth
               label="Email"
+              type="email"
               placeholder="Enter your email"
               aria-label="Email"
               isInvalid={!!errors.email}
@@ -144,6 +185,9 @@ const SignInSignUp = () => {
                 <Input
                   {...register("confirmPassword", {
                     required: "Confirm Password is required",
+                    validate: (value) =>
+                      value === getValues("password") ||
+                      "Passwords do not match",
                   })}
                   fullWidth
                   label="Confirm Password"
@@ -165,8 +209,26 @@ const SignInSignUp = () => {
               </div>
             )}
 
+            {/* Error Message (From Login or Registration) */}
+            {loginError && isSignIn && (
+              <div className="text-right text-sm text-red-500">
+                {loginError.message}
+              </div>
+            )}
+            {registerError && !isSignIn && (
+              <div className="text-right text-sm text-red-500">
+                {registerError.message}
+              </div>
+            )}
+
             {/* Submit Button */}
-            <Button type="submit" fullWidth color="primary" className="mt-6">
+            <Button
+              disabled={pendingLogin || pendingRegister}
+              type="submit"
+              fullWidth
+              color="primary"
+              className="mt-6"
+            >
               {isSignIn ? "Sign In" : "Sign Up"}
             </Button>
           </form>
@@ -207,13 +269,6 @@ const SignInSignUp = () => {
                   onClick={() => signIn("github", { callbackUrl: "/" })}
                 >
                   <FaGithub size={20} />
-                </Button>
-                <Button
-                  isIconOnly={true}
-                  color="default"
-                  onClick={() => signOut()}
-                >
-                  L
                 </Button>
               </div>
             </div>

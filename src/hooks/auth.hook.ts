@@ -2,15 +2,22 @@ import { useMutation } from "@tanstack/react-query";
 import { FieldValues } from "react-hook-form";
 
 import { toast } from "sonner";
-import { forgotPassword, loginUser, registerUser, resetPassword } from "../service/auth";
+import {
+  forgotPassword,
+  getCurrentUser,
+  loginUser,
+  registerUser,
+  resetPassword,
+} from "../service/auth";
 
 export const useUserRegistration = () => {
   const toastId = 1;
 
   return useMutation({
     mutationFn: async (user: FieldValues) => await registerUser(user),
-    onSuccess: () => {
-      toast.success("User Registered Successfully", { id: toastId });
+    onSuccess: async () => {
+      const user = await getCurrentUser();
+      toast.success(`${user?.name} welcome!`, { id: toastId });
     },
 
     onError: (error) => {
@@ -27,8 +34,10 @@ export const useUserLogin = () => {
 
   return useMutation({
     mutationFn: async (user: FieldValues) => await loginUser(user),
-    onSuccess: () => {
-      toast.success("User Logged in Successfully", { id: toastId });
+    onSuccess: async () => {
+      const user = await getCurrentUser();
+
+      toast.success(`${user?.name} welcome!`, { id: toastId });
     },
 
     onError: (error) => {
@@ -50,7 +59,6 @@ export const useForgotPassword = () => {
     },
 
     onError: (error: any) => {
-    
       toast.error(error.message, { id: toastId });
     },
     onMutate: () => {
@@ -64,7 +72,7 @@ export const useResetPassword = () => {
 
   return useMutation({
     mutationFn: async (payload: { password: string; token: string }) =>
-      await resetPassword(payload.password,payload.token),
+      await resetPassword(payload.password, payload.token),
     onSuccess: () => {
       toast.success("Password has been updated!", { id: toastId });
     },
@@ -77,5 +85,3 @@ export const useResetPassword = () => {
     },
   });
 };
-
-

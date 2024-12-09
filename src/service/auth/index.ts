@@ -2,6 +2,7 @@
 
 import axiosInstance from "@/src/config/AxiosInstance/axios.config";
 import { jwtDecode } from "jwt-decode";
+import { signOut } from "next-auth/react";
 import { cookies } from "next/headers";
 import { FieldValues } from "react-hook-form";
 
@@ -15,6 +16,7 @@ export const registerUser = async (user: FieldValues) => {
     }
     return data;
   } catch (e: any) {
+    console.log(e.response.data);
     throw new Error(e.response.data.message);
   }
 };
@@ -36,6 +38,7 @@ export const loginUser = async (user: FieldValues) => {
 
 export const logoutUser = async () => {
   const cookieStore = await cookies();
+  signOut()
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
 };

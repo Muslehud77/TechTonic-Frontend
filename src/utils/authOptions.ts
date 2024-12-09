@@ -17,23 +17,6 @@ export const authOptions: NextAuthOptions = {
       clientId: envConfig.GOOGLE_ID!,
       clientSecret: envConfig.GOOGLE_SECRET!,
     }),
-
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {},
-      async authorize(credentials, req) {
-        const res = (await loginUser(
-          credentials as { email: string; password: string }
-        )) as User & {
-          accessToken: string;
-        };
-        if (res.accessToken) {
-          return res; 
-        } else {
-          return null;
-        }
-      },
-    }),
   ],
 
   callbacks : {
@@ -46,8 +29,8 @@ export const authOptions: NextAuthOptions = {
         const { name, email, image } = user;
         const { provider } = account;
        
-        const res = await loginUser({name,email,profilePhoto:image,provider});
-        console.log(res)
+        await loginUser({name,email,profilePhoto:image,provider});
+       
       }
 
 

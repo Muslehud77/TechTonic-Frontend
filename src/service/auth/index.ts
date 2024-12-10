@@ -63,6 +63,8 @@ export const getCurrentUser = async () => {
       profilePhoto: decodedToken.profilePhoto,
       isPremium: decodedToken.isPremium,
       expireAt: decodedToken.expireAt,
+      followers: decodedToken.followers,
+      following: decodedToken.following,
     };
   }
 

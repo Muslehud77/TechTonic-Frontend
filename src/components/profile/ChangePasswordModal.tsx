@@ -3,24 +3,33 @@
 import { useDisclosure } from "@nextui-org/modal";
 import TechTonicModal from "../modal";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { EyeClosed, EyeIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useUpdatePassword } from "@/src/hooks/auth.hook";
+import { useRouter } from "next/navigation";
 
-const EditProfileModal = () => {
+const UpdatePassword = () => {
+
+  const router = useRouter()
+  
+
+  const {mutate:updatePasswordMutation, isPending,isSuccess} = useUpdatePassword()
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isVisible, setIsVisible] = useState({
     oldPassword: false,
     newPassword: false,
   });
 
-  const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const {
     handleSubmit,
     control,
     register,
+    reset
+    ,
     formState: { errors },
   } = useForm();
 
@@ -31,65 +40,27 @@ const EditProfileModal = () => {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfilePreview(URL.createObjectURL(file));
-    }
+ 
+  const onSubmit = (data: any) => {
+    updatePasswordMutation(data)
+    onClose()
+    reset()
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data); // Process the form data here
-  };
+  useEffect(()=>{
+    if(isSuccess){
+      router.push("/login")
+    }
+  },[isSuccess])
+
+ 
 
   return (
-    <TechTonicModal isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+    <TechTonicModal modalSize="md" buttonText="Update Password"  isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
       <div className="w-full max-w-2xl p-6 rounded-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Edit Profile
+          Update Password
         </h2>
-
-        {/* Profile Picture Preview */}
-        <div className="flex justify-center mb-6">
-          <div className="relative">
-            <img
-              src={profilePreview || "https://via.placeholder.com/150"}
-              alt="Profile Picture"
-              className="w-32 h-32 rounded-full object-cover"
-            />
-            <input
-              type="file"
-              {...register("profilePicture")}
-              accept="image/*"
-              onChange={handleImageChange}
-              className="absolute bottom-0 right-0 opacity-0 cursor-pointer w-8 h-8"
-            />
-          </div>
-        </div>
-
-        {/* Name Input */}
-        <Input
-          {...register("name", { required: "Name is required" })}
-          label="Full Name"
-          placeholder="Enter your full name"
-          fullWidth
-          aria-label="Full Name"
-          isInvalid={!!errors.name}
-          errorMessage={errors?.name?.message as string}
-          className="mb-4"
-        />
-
-        {/* Phone Number Input */}
-        <Input
-          {...register("phone", { required: "Phone number is required" })}
-          label="Phone Number"
-          placeholder="Enter your phone number"
-          fullWidth
-          aria-label="Phone Number"
-          isInvalid={!!errors.phone}
-          errorMessage={errors?.phone?.message as string}
-          className="mb-4"
-        />
 
         {/* Old Password Input */}
         <Input
@@ -152,4 +123,4 @@ const EditProfileModal = () => {
   );
 };
 
-export default EditProfileModal;
+export default UpdatePassword;

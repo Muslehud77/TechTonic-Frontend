@@ -8,6 +8,7 @@ import {
   loginUser,
   registerUser,
   resetPassword,
+  updatePassword,
 } from "../service/auth";
 
 export const useUserRegistration = () => {
@@ -75,6 +76,25 @@ export const useResetPassword = () => {
       await resetPassword(payload.password, payload.token),
     onSuccess: () => {
       toast.success("Password has been updated!", { id: toastId });
+    },
+
+    onError: (error: any) => {
+      toast.error(error.message, { id: toastId });
+    },
+    onMutate: () => {
+      toast.loading("Updating the password...", { id: toastId });
+    },
+  });
+};
+
+export const useUpdatePassword = () => {
+  const toastId = 1;
+
+  return useMutation({
+    mutationFn: async (passwordData:FieldValues) =>
+      await updatePassword(passwordData),
+    onSuccess: () => {
+      toast.success("Password has been updated, Please login with your new password!", { id: toastId, duration: 10000 });
     },
 
     onError: (error: any) => {

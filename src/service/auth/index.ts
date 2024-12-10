@@ -1,6 +1,7 @@
 "use server";
 
 import axiosInstance from "@/src/config/AxiosInstance/axios.config";
+import { TUser } from "@/src/types";
 import { jwtDecode } from "jwt-decode";
 import { signOut } from "next-auth/react";
 import { cookies } from "next/headers";
@@ -38,7 +39,7 @@ export const loginUser = async (user: FieldValues) => {
 
 export const logoutUser = async () => {
   const cookieStore = await cookies();
-  signOut()
+  signOut();
   cookieStore.delete("accessToken");
   cookieStore.delete("refreshToken");
 };
@@ -65,7 +66,7 @@ export const getCurrentUser = async () => {
       expireAt: decodedToken.expireAt,
       followers: decodedToken.followers,
       following: decodedToken.following,
-    };
+    } as TUser;
   }
 
   return decodedToken;
@@ -115,6 +116,24 @@ export const resetPassword = async (password: string, token: string) => {
 
     return data;
   } catch (e: any) {
+    throw new Error(e.response.data.message);
+  }
+};
+
+export const updatePassword = async (passwordData: FieldValues) => {
+  try {
+    const { data } = await axiosInstance.post(
+      "/auth/change-password",
+      passwordData
+    );
+
+    if (data.success) {
+      logoutUser();
+    }
+
+    return data;
+  } catch (e: any) {
+    console.log(e.response.data);
     throw new Error(e.response.data.message);
   }
 };

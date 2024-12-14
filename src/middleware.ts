@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const accessToken = cookies().get("accessToken")?.value;
 
   if (!accessToken) {
-    if(pathname === "/login") {
+    if(pathname === "/login" || pathname === "/forgot-password" || pathname === "/reset-password") {
       return NextResponse.next();
     }
     return NextResponse.redirect(new URL("/login", request.url));

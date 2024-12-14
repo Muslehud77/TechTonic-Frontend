@@ -14,7 +14,7 @@ const layout = ({ children }: layoutProps) => {
         <Sidebar />
         <div className="flex-1">
           <Navbar />
-          <main className="container mx-auto max-w-7xl  px-6">
+          <main className="  px-6">
             {children}
           </main>
         </div>

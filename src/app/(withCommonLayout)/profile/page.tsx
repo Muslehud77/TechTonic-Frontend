@@ -50,7 +50,7 @@ const ProfilePage = async () => {
           </div>
 
           {/* Edit Profile Button */}
-          <div className="flex justify-center items-center mt-6">
+          <div className="flex justify-center items-center mt-6 gap-2">
             <EditProfileModal user={user} />
             <UpdatePassword />
           </div>

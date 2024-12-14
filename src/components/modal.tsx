@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from "@nextui-org/modal";
+import { Modal, ModalContent, ModalBody } from "@nextui-org/modal";
 
 import { Button } from "@nextui-org/button";
 
@@ -16,7 +9,7 @@ type TModalProps = {
   onClose: () => void;
   children: React.ReactNode;
   buttonText?: string;
-  size?: "sm" | "md" | "lg" ;
+  size?: "sm" | "md" | "lg";
   color?: "default" | "primary" | "success" | "warning" | "danger";
   isLoading?: boolean;
   modalSize?: "sm" | "md" | "lg" | "xl" | "2xl";
@@ -41,8 +34,9 @@ export default function TechTonicModal({
           size={size || "md"}
           color={color || "default"}
           onPress={onOpen}
+          variant="flat"
         >
-          {buttonText || "open"}{" "}
+          {buttonText || "open"}
         </Button>
       </div>
       <Modal isOpen={isOpen} size={modalSize} onClose={onClose}>

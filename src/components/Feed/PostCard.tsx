@@ -1,10 +1,12 @@
-// components/PostCard.tsx
-
-import React from "react";
-
+"use client";
+import  { useState } from "react";
+import { BiSolidLike } from "react-icons/bi";
 import { TPost } from "@/src/types";
 import { Image } from "@nextui-org/image";
+import { Button } from "@nextui-org/button";
+import { upvoteDownVote } from "@/src/service/post";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface PostCardProps {
   post: TPost;
@@ -12,32 +14,58 @@ interface PostCardProps {
 }
 
 const PostCard = ({ post, currentUserId }: PostCardProps) => {
-  // Determine if the current user has upvoted or downvoted
-    const hasUpvoted = post.upvotes.includes(currentUserId);
-    const hasDownvoted = post.downvotes.includes(currentUserId);
+  const queryClient = useQueryClient();
 
-  //   // Handlers
-  //   const handleUpvote = () => {
-  //     onUpvote(post.title); // Assuming post.title is unique, replace with post ID if available
-  //   };
+  const [hasUpvoted, setHasUpvoted] = useState(
+    post.upvotes.includes(currentUserId) || false
+  );
+  const [hasDownvoted, setHasDownvoted] = useState(
+    post.downvotes.includes(currentUserId) || false
+  );
 
-  //   const handleDownvote = () => {
-  //     onDownvote(post.title); // Same as above
-  //   };
-
-  //   const handleComment = () => {
-  //     onComment(post.title);
-  //   };
-
-  //   const handleShare = () => {
-  //     onShare(post.title);
-  //   };
-
-  // Format the creation date
   const formattedDate = new Date(post?.createdAt).toLocaleDateString();
 
+  const handleUpvoteDownVote = async (action: "upvote" | "downvote") => {
+    const payload = {
+      postId: post._id,
+      action:
+        action === "upvote"
+          ? hasUpvoted
+            ? "clear"
+            : "upvote"
+          : hasDownvoted
+            ? "clear"
+            : "downvote",
+    };
+
+    if (action === "upvote") {
+      if (!hasUpvoted) {
+        setHasUpvoted(true);
+         setHasDownvoted(false);
+      } else {
+        setHasUpvoted(false);
+         setHasDownvoted(false);
+      }
+    }
+    if (action === "downvote") {
+      if (!hasDownvoted) {
+        setHasDownvoted(true);
+           setHasUpvoted(false);
+      } else {
+        setHasDownvoted(false);
+           setHasUpvoted(false);
+      }
+    }
+
+    const data = await upvoteDownVote(payload);
+
+    if (data.success) {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    }
+  };
+
   return (
-    <div className="w-full max-w-md px-6 py-6 mt-16 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+    <div className="w-full max-w-md px-6 py-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
       {/* Author Section */}
       <div className="flex items-center justify-between">
         <div className="flex items-center">
@@ -47,15 +75,11 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
             src={post.author.profilePhoto || "/default-avatar.png"}
             width={48}
             height={48}
-            // objectFit="cover"
           />
-          <div className="ml-4">
+          <div className="ml-4 ">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
               {post.author.name}
             </h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {/* {author.role.replace("_", " ")} */}
-            </span>
           </div>
         </div>
         <span className="text-sm text-gray-400 dark:text-gray-500">
@@ -64,7 +88,7 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
       </div>
 
       {/* Post Title */}
-      <h3 className="mt-4 text-2xl font-bold text-gray-800 dark:text-white">
+      <h3 className="mt-4 h-20 text-2xl font-light text-gray-800 dark:text-white">
         {post.title}
       </h3>
 
@@ -76,8 +100,6 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
             alt={post.images[0].caption || "Post image"}
             src={post.images[0].url}
             width={800}
-            height={400}
-            objectFit="cover"
           />
           {post.images[0].caption && (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -87,59 +109,37 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
         </div>
       )}
 
-      {/* Post Content */}
-      <p className="mt-4 text-gray-700 dark:text-gray-300">{post.content}</p>
-
+      <div className="mt-4 flex flex-wrap gap-2 h-16">
+        {post.tags.map((tag) => (
+          <Button
+            size="sm"
+            className="font-bold"
+            key={tag}
+            color="primary"
+            variant="flat"
+          >
+            #{tag}
+          </Button>
+        ))}
+      </div>
       {/* Interaction Buttons */}
       <div className="flex items-center justify-between mt-6">
         {/* Upvote & Downvote */}
         <div className="flex items-center space-x-4">
           <button
-            // onClick={handleUpvote}
-            className={`flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 ${
-              hasUpvoted ? "font-bold" : ""
-            }`}
-            aria-label="Upvote"
+            onClick={() => handleUpvoteDownVote("upvote")}
+            className={`flex group gap-1 duration-400 hover:text-primary items-center ${hasUpvoted ? "font-bold text-primary" : ""}`}
+            aria-label="Downvote"
           >
-            {/* Upvote Icon */}
-            <svg
-              className="w-5 h-5 mr-1"
-              fill={hasUpvoted ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 15l7-7 7 7"
-              ></path>
-            </svg>
+            <BiSolidLike className="text-xl group-hover:scale-110 group-hover:rotate-12 duration-150" />
             <span>{post.upvotes.length}</span>
           </button>
           <button
-            // onClick={handleDownvote}
-            className={`flex items-center text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 ${
-              hasDownvoted ? "font-bold" : ""
-            }`}
+            onClick={() => handleUpvoteDownVote("downvote")}
+            className={`flex group gap-1 duration-400 hover:text-red-500 items-center ${hasDownvoted ? "font-bold text-red-500" : ""}`}
             aria-label="Downvote"
           >
-            {/* Downvote Icon */}
-            <svg
-              className="w-5 h-5 mr-1"
-              fill={hasDownvoted ? "currentColor" : "none"}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
+            <BiSolidLike className="text-xl rotate-180 group-hover:scale-110 group-hover:rotate-[160deg] duration-150" />
             <span>{post.downvotes.length}</span>
           </button>
         </div>

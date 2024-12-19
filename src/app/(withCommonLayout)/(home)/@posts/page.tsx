@@ -1,17 +1,21 @@
+"use client"
 import PostCard from "@/src/components/Feed/PostCard";
+import { useCurrentUser } from "@/src/hooks/auth.hook";
+import { useGetPosts } from "@/src/hooks/post.hooks";
 import { getCurrentUser } from "@/src/service/auth";
 import { getPosts } from "@/src/service/post";
 import { TPost } from "@/src/types";
 
-const Posts = async () => {
+const Posts =  () => {
 
-    const user = await getCurrentUser()
-    const {data:posts} = await getPosts([])
-  
+    const {data:user} = useCurrentUser()
+    const {data} = useGetPosts({queryParams:[]})
+
+   const posts = data?.data
 
 
   return (
-    <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  items-center min-h-screen bg-gray-100 dark:bg-gray-900 ">
+    <main className="flex flex-wrap gap-3 justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
       {posts?.map((post:TPost) => (
         <PostCard
           key={post._id}
@@ -23,6 +27,7 @@ const Posts = async () => {
         //   onShare={handleShare}
         />
       ))}
+     
     </main>
   );
 };

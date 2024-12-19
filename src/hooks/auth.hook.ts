@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { FieldValues } from "react-hook-form";
 
 import { toast } from "sonner";
@@ -10,6 +10,14 @@ import {
   resetPassword,
   updatePassword,
 } from "../service/auth";
+
+export const useCurrentUser = ()=>{
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => await getCurrentUser(),
+  })
+}
+
 
 export const useUserRegistration = () => {
   const toastId = 1;

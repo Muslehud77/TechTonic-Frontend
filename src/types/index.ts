@@ -38,7 +38,7 @@ export type TPost = {
     | "Mobile"
     | "Networking"
     | "Other";
-  tags: string[];
+  tags: string[]; 
   images: Image[]; // Array of images with optional captions
   isPremium: boolean; // Whether the post is premium or not
   author: TUser; // Author ID (user who created the post)
